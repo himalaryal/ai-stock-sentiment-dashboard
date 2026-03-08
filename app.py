@@ -251,7 +251,10 @@ st.markdown("""
 col_input, col_button = st.columns([4, 1])
 
 with col_input:
-    ticker = st.text_input("Enter stock ticker", placeholder="Example: AAPL").strip().upper()
+    ticker = st.text_input(
+        "Enter stock ticker",
+        placeholder="Example: AAPL"
+    ).strip().upper()
 
 company = company_names.get(ticker, ticker)
 
@@ -260,8 +263,10 @@ with col_button:
     st.write("")
     analyze = st.button("Analyze")
 
-st.caption("This tool is for educational use only and does not provide financial advice.")
+# This line makes Enter work
+analyze = analyze or bool(ticker)
 
+st.caption("This tool is for educational use only and does not provide financial advice.")
 # ----------------------------
 # Main logic
 # ----------------------------
