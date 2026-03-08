@@ -225,14 +225,21 @@ def fetch_news(ticker: str):
 def get_stock_price(ticker: str):
     try:
         stock = yf.Ticker(ticker)
+
+        # Try fast info first
+        fast_info = stock.fast_info
+        if fast_info and "lastPrice" in fast_info and fast_info["lastPrice"] is not None:
+            return round(float(fast_info["lastPrice"]), 2)
+
+        # Fallback to recent history
         hist = stock.history(period="5d")
+        if not hist.empty and "Close" in hist.columns:
+            latest_close = hist["Close"].dropna().iloc[-1]
+            return round(float(latest_close), 2)
 
-        if hist.empty:
-            return None
-
-        latest_close = hist["Close"].dropna().iloc[-1]
-        return round(float(latest_close), 2)
-    except Exception:
+        return None
+    except Exception as e:
+        st.warning(f"Could not fetch stock price for {ticker}.")
         return None
 
 # ----------------------------
