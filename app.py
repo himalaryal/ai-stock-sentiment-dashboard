@@ -138,7 +138,10 @@ st.markdown("""
 # ----------------------------
 # API key
 # ----------------------------
-API_KEY = "b222057747d949ecb417af8bcf71d62b"
+
+import streamlit as st
+
+API_KEY = st.secrets["NEWS_API_KEY"]
 
 # ----------------------------
 # Company names
