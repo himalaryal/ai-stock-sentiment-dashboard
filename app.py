@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import plotly.express as px
 import plotly.graph_objects as go
+import yfinance as yf
 
 # ----------------------------
 # Page config
@@ -136,11 +137,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----------------------------
-# API key
+# Secrets / API key
 # ----------------------------
-
-import streamlit as st
-
 API_KEY = st.secrets["NEWS_API_KEY"]
 
 # ----------------------------
@@ -154,7 +152,11 @@ company_names = {
     "AMZN": "Amazon",
     "META": "Meta",
     "GOOGL": "Google",
-    "NFLX": "Netflix"
+    "NFLX": "Netflix",
+    "AMD": "AMD",
+    "INTC": "Intel",
+    "IBM": "IBM",
+    "ORCL": "Oracle"
 }
 
 # ----------------------------
@@ -165,35 +167,35 @@ analyzer = SentimentIntensityAnalyzer()
 # ----------------------------
 # Helper functions
 # ----------------------------
-def get_sentiment_label(score):
+def get_sentiment_label(score: float) -> str:
     if score >= 0.05:
         return "Positive"
     elif score <= -0.05:
         return "Negative"
     return "Neutral"
 
-def get_overall_label(score):
+def get_overall_label(score: float) -> str:
     if score >= 0.05:
         return "Bullish"
     elif score <= -0.05:
         return "Bearish"
     return "Neutral"
 
-def get_overall_message(label):
+def get_overall_message(label: str) -> str:
     if label == "Bullish":
         return "Recent news sentiment is mostly positive."
     elif label == "Bearish":
         return "Recent news sentiment is mostly negative."
     return "Recent news sentiment is mixed or balanced."
 
-def get_tag_html(label):
+def get_tag_html(label: str) -> str:
     if label == "Positive":
         return '<span class="tag-positive">Positive</span>'
     elif label == "Negative":
         return '<span class="tag-negative">Negative</span>'
     return '<span class="tag-neutral">Neutral</span>'
 
-def fetch_news(ticker):
+def fetch_news(ticker: str):
     today = datetime.utcnow().date()
     from_date = today - timedelta(days=7)
 
@@ -220,6 +222,19 @@ def fetch_news(ticker):
     except Exception as e:
         return None, f"Request failed: {e}"
 
+def get_stock_price(ticker: str):
+    try:
+        stock = yf.Ticker(ticker)
+        hist = stock.history(period="5d")
+
+        if hist.empty:
+            return None
+
+        latest_close = hist["Close"].dropna().iloc[-1]
+        return round(float(latest_close), 2)
+    except Exception:
+        return None
+
 # ----------------------------
 # Sidebar
 # ----------------------------
@@ -230,6 +245,7 @@ st.sidebar.write(
     - fetches recent stock-related news
     - analyzes sentiment using VADER
     - summarizes overall market mood
+    - shows live stock price
     - displays charts and article insights
     """
 )
@@ -246,27 +262,26 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----------------------------
-# Input area
+# Input form
 # ----------------------------
-col_input, col_button = st.columns([4, 1])
+with st.form("ticker_form"):
+    col_input, col_button = st.columns([4, 1])
 
-with col_input:
-    ticker = st.text_input(
-        "Enter stock ticker",
-        placeholder="Example: AAPL"
-    ).strip().upper()
+    with col_input:
+        ticker = st.text_input(
+            "Enter stock ticker",
+            placeholder="Example: AAPL"
+        ).strip().upper()
+
+    with col_button:
+        st.write("")
+        st.write("")
+        analyze = st.form_submit_button("Analyze")
 
 company = company_names.get(ticker, ticker)
 
-with col_button:
-    st.write("")
-    st.write("")
-    analyze = st.button("Analyze")
-
-# This line makes Enter work
-analyze = analyze or bool(ticker)
-
 st.caption("This tool is for educational use only and does not provide financial advice.")
+
 # ----------------------------
 # Main logic
 # ----------------------------
@@ -275,11 +290,10 @@ if analyze:
         st.warning("Please enter a stock ticker.")
     elif not ticker.isalpha() or len(ticker) > 5:
         st.warning("Please enter a valid ticker using only letters, up to 5 characters.")
-    elif API_KEY == "PASTE_YOUR_NEWSAPI_KEY_HERE":
-        st.error("Please add your NewsAPI key inside app.py before running the app.")
     else:
-        with st.spinner("Fetching news and analyzing sentiment..."):
+        with st.spinner("Fetching news, stock price, and analyzing sentiment..."):
             articles, error = fetch_news(ticker)
+            stock_price = get_stock_price(ticker)
 
         if error:
             st.error(error)
@@ -333,6 +347,23 @@ if analyze:
                     st.error(f"**Overall Sentiment for {company} ({ticker}): {overall_label}** — {overall_message}")
                 else:
                     st.info(f"**Overall Sentiment for {company} ({ticker}): {overall_label}** — {overall_message}")
+
+                # ----------------------------
+                # Top summary cards
+                # ----------------------------
+                top1, top2, top3 = st.columns(3)
+
+                with top1:
+                    st.metric("Company", f"{company} ({ticker})")
+
+                with top2:
+                    if stock_price is not None:
+                        st.metric("Latest Price", f"${stock_price}")
+                    else:
+                        st.metric("Latest Price", "N/A")
+
+                with top3:
+                    st.metric("Market Sentiment", overall_label)
 
                 # ----------------------------
                 # Summary cards
@@ -422,6 +453,12 @@ if analyze:
                     st.markdown('<div class="section-title">Overview</div>', unsafe_allow_html=True)
                     st.write(f"**Company:** {company}")
                     st.write(f"**Ticker:** {ticker}")
+
+                    if stock_price is not None:
+                        st.write(f"**Latest Stock Price:** ${stock_price}")
+                    else:
+                        st.write("**Latest Stock Price:** Not available")
+
                     st.write(f"**Articles analyzed:** {len(df)}")
                     st.write(f"**Market mood:** {overall_label}")
                     st.write(f"**Explanation:** {overall_message}")
