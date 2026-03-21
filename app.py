@@ -241,7 +241,22 @@ def get_stock_price(ticker: str):
     except Exception as e:
         st.warning(f"Could not fetch stock price for {ticker}.")
         return None
+        
+def get_company_info(ticker: str):
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
 
+        return {
+            "name": info.get("longName"),
+            "sector": info.get("sector"),
+            "industry": info.get("industry"),
+            "country": info.get("country"),
+            "website": info.get("website"),
+            "summary": info.get("longBusinessSummary")
+        }
+    except Exception:
+        return None
 # ----------------------------
 # Sidebar
 # ----------------------------
@@ -301,6 +316,7 @@ if analyze:
         with st.spinner("Fetching news, stock price, and analyzing sentiment..."):
             articles, error = fetch_news(ticker)
             stock_price = get_stock_price(ticker)
+            company_info = get_company_info(ticker)
 
         if error:
             st.error(error)
@@ -371,6 +387,29 @@ if analyze:
 
                 with top3:
                     st.metric("Market Sentiment", overall_label)
+
+
+                st.markdown("### 🏢 Company Information")
+
+                if company_info:
+                    info_col1, info_col2 = st.columns(2)
+    
+                    with info_col1:
+                        st.write(f"**Company Name:** {company_info.get('name', 'N/A')}")
+                        st.write(f"**Ticker:** {ticker}")
+                        st.write(f"**Sector:** {company_info.get('sector', 'N/A')}")
+                        st.write(f"**Industry:** {company_info.get('industry', 'N/A')}")
+    
+                    with info_col2:
+                        st.write(f"**Country:** {company_info.get('country', 'N/A')}")
+                        st.write(f"**Website:** {company_info.get('website', 'N/A')}")
+    
+                    summary = company_info.get("summary")
+                    if summary:
+                        st.write("**Business Summary:**")
+                        st.write(summary)
+                else:
+                    st.info("Company information is not available for this ticker.")
 
                 # ----------------------------
                 # Summary cards
