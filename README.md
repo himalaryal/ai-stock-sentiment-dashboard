@@ -2,8 +2,6 @@
 
 An AI-powered web application that analyzes stock market sentiment using news data and provides insights for investors.
 
----
-
 🚀 Overview
 
 This project uses Natural Language Processing (NLP) to analyze financial news and determine whether the sentiment around a stock is **positive, negative, or neutral**.
@@ -14,8 +12,6 @@ It helps users make better decisions by combining:
 * Sentiment analysis
 * Stock price insights
 
----
-
 🧠 Features
 
 * 🔍 Search stock ticker (e.g., AAPL, TSLA)
@@ -25,8 +21,6 @@ It helps users make better decisions by combining:
 * 📈 Show stock price (optional enhancement)
 * 🌐 Simple web interface (Streamlit)
 
----
-
 🛠️ Tech Stack
 
 * Python
@@ -35,8 +29,6 @@ It helps users make better decisions by combining:
 * Scikit-learn or TextBlob (Sentiment Analysis)
 * NewsAPI (News data)
 * yfinance (Stock price data)
-
----
 
 📂 Project Structure
 
