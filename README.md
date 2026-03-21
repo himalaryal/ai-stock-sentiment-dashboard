@@ -41,8 +41,6 @@ project/
 └── README.md
 ```
 
----
-
 ⚙️ Installation & Setup
 
 1️⃣ Clone the repository
@@ -66,8 +64,6 @@ venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 ```
 
----
-
 🔑 API Setup (NewsAPI)
 
 1. Go to https://newsapi.org
@@ -78,15 +74,11 @@ pip install -r requirements.txt
 API_KEY = "your_api_key_here"
 ```
 
----
-
 ▶️ Run the App
 
 ```bash
 streamlit run app.py
 ```
-
----
 
 📊 Example Workflow
 
@@ -94,8 +86,6 @@ streamlit run app.py
 2. App fetches latest news
 3. AI analyzes sentiment
 4. Results displayed on screen
-
----
 
 📌 Future Improvements
 
@@ -105,19 +95,13 @@ streamlit run app.py
 * Add user authentication
 * Portfolio tracking
 
----
-
 🤝 Contributing
 
 Contributions are welcome! Feel free to fork the repo and submit a pull request.
 
----
-
 📄 License
 
 This project is licensed under the MIT License.
-
----
 
 👨‍💻 Author
 
